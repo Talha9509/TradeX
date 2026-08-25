@@ -1,7 +1,7 @@
 import { OrderBook } from "../Types/types"
 
 
-export const GetDepth = (data: Record<string | number, any>) => {
+export const GetDepth = (data: Record<string | number, any>, changesCount: number) => {
   // Algorithm:
   // 1. get depth of asset from orderbook
   const asset = data.asset
@@ -10,14 +10,13 @@ export const GetDepth = (data: Record<string | number, any>) => {
 
   return {
     bids: Array.from(assetDepth.bids.entries()).map(([price, level]) => ({
-      price,
-      totalQty: level.totalQty,
-      totalOrders: level.orders.length
+      price: String(price),
+      totalQty: String(level.totalQty)
     })),
     asks: Array.from(assetDepth.asks.entries()).map(([price, level]) => ({
-      price,
-      totalQty: level.totalQty,
-      totalOrders: level.orders.length
-    }))
+      price: String(price),
+      totalQty: String(level.totalQty)
+    })),
+    lastUpdatedId: changesCount
   }
 }

@@ -27,7 +27,13 @@ async function poll() {
         const parsedUpdate: update = JSON.parse(message.message.update)
         console.log(parsedUpdate)
         activeSubscriptions[parsedUpdate.stream]?.forEach((ws) => {
-          if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(parsedUpdate.data))
+          if (ws.readyState === ws.OPEN){
+            ws.send(JSON.stringify({ ...parsedUpdate.data, lastUpdatedId: parsedUpdate.lastUpdatedId }))
+            console.log("sent message")
+            console.log(parsedUpdate.lastUpdatedId)
+            console.log(parsedUpdate.data.asks)
+            console.log(parsedUpdate.data.bids)
+          } 
         })
         await StreamClient.xAck(streamKey, groupName, message.id)
       }

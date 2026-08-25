@@ -4,8 +4,8 @@ import { lastId } from '../index'
 import EngToWS from '../utils/EngToWS'
 import type { market, updatedAsksBids } from '../Types/types';
 
-let changesCount = 0;
-export default async function snapshot(updatedAsks: updatedAsksBids, updatedBids: updatedAsksBids, asset: market) {
+
+export default async function snapshot(updatedAsks: updatedAsksBids, updatedBids: updatedAsksBids, asset: market, changesCount: number) {
   changesCount++
 
   console.log(updatedAsks)

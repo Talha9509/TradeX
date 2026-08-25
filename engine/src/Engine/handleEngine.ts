@@ -8,9 +8,10 @@ import snapshot from '../snapshot/snapshot'
 import EngTodb from '../utils/EngTodb'
 
 export default async function handleEngine(engineReq: EngineRequest) {
+  let changesCount = 0;
   if(engineReq.function == 'create_order'){
     const result = await CreateOrder(engineReq.payload, engineReq.userId)
-    void snapshot(result.updatedAsks, result.updatedBids, result.asset).catch((err) => {
+    void snapshot(result.updatedAsks, result.updatedBids, result.asset, changesCount).catch((err) => {
       console.error("Snapshot failed:", err);
     });
 
@@ -22,7 +23,7 @@ export default async function handleEngine(engineReq: EngineRequest) {
   else if(engineReq.function == 'cancel_order'){
     const result = await CancelOrder(engineReq.payload, engineReq.userId)
     console.log(result)
-    void snapshot(result.updatedAsks, result.updatedBids, result.asset).catch((err) => {
+    void snapshot(result.updatedAsks, result.updatedBids, result.asset, changesCount).catch((err) => {
       console.error("Snapshot failed:", err);
     });
 
@@ -43,7 +44,7 @@ export default async function handleEngine(engineReq: EngineRequest) {
   }
 
   else if(engineReq.function == 'get_depth'){
-    const result = await GetDepth(engineReq.payload)
+    const result = await GetDepth(engineReq.payload, changesCount)
     console.log(result)
     return result
   }

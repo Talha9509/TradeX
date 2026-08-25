@@ -129,10 +129,10 @@ export const getDepthofAsset = async (req: Request, res: Response) => {
     const response = await client.xAdd(betoEngKey, '*', { ToEngineStringified })
     console.log(response)
 
-    const returnedData = await pendingResponse as { bids: Array<{ price: number; totalQty: number; totalOrders: number }>; asks: Array<{ price: number; totalQty: number; totalOrders: number }> };
+    const returnedData = await pendingResponse as { bids: Array<{ price: number; totalQty: number; totalOrders: number }>; asks: Array<{ price: number; totalQty: number; totalOrders: number }>, lastUpdatedId: number };
     console.log("returnedData: " + JSON.stringify(returnedData))
 
-    return res.json({ returnedData })
+    return res.json({ asks: returnedData.asks, bids: returnedData.bids, lastUpdatedId: returnedData.lastUpdatedId })
   } catch (error) {
     console.log(error)
     return res.status(500).json({ meessage: 'Internal Server Error' })
