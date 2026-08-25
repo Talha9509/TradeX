@@ -1,18 +1,8 @@
 import { WebSocket } from 'ws'
 import axios from 'axios'
-
-type orderBook = {
-  bids: Record<string, string>,
-  asks: Record<string, string>
-}
+import type { orderBook, BackendResponse, DepthMessage, WsControlMessage } from './Types/types'
 
 const OrderBook: orderBook = { bids: {}, asks: {} }
-
-type BackendResponse = {
-  asks: { price: string, totalQty: string }[],
-  bids: { price: string, totalQty: string }[],
-  lastUpdatedId: number
-}
 
 let OrderBookInitialized = false;
 let lastUpdatedId = 0;
@@ -21,16 +11,6 @@ const buffer: { updatedAsks: [string, string][], updatedBids: [string, string][]
 const wsURL = process.env.WS
 const beURL = process.env.Backend
 const wss = new WebSocket(wsURL!)
-
-type DepthMessage = {
-  asks: [string, string][],
-  bids: [string, string][],
-  lastUpdatedId: number
-}
-
-type WsControlMessage = {
-  result: string
-}
 
 function updateOrderBook(updatedAsks: [string, string][], updatedBids: [string, string][]) {
   updatedAsks.forEach(([price, qty]) => {
