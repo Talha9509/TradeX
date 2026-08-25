@@ -15,26 +15,24 @@ await createConsumerGroup(streamKey, groupName)
 const activeSubscriptions: Record<string, WebSocket[]> = {}
 
 async function poll() {
-  while (1) {
-    const responses = await StreamClient.xReadGroup(groupName, consumerName,
-      { key: streamKey, id: '>' },
-      { COUNT: 10, BLOCK: 0 }
-    )
-    if (!responses) {
-      poll()
-    } else {
-      for (const response of responses) {
-        for (const message of response.messages) {
-          const parsedUpdate: update = JSON.parse(message.message.update)
-          console.log(parsedUpdate)
-          activeSubscriptions[parsedUpdate.stream]?.forEach((ws) => {
-            if (ws.readyState === ws.OPEN)  ws.send(JSON.stringify(parsedUpdate.data))
-          })
-          await StreamClient.xAck(streamKey, groupName, message.id)
-        }
+  const responses = await StreamClient.xReadGroup(groupName, consumerName,
+    { key: streamKey, id: '>' },
+    { COUNT: 10, BLOCK: 0 }
+  )
+  if (!responses) {
+    poll()
+  } else {
+    for (const response of responses) {
+      for (const message of response.messages) {
+        const parsedUpdate: update = JSON.parse(message.message.update)
+        console.log(parsedUpdate)
+        activeSubscriptions[parsedUpdate.stream]?.forEach((ws) => {
+          if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(parsedUpdate.data))
+        })
+        await StreamClient.xAck(streamKey, groupName, message.id)
       }
-      poll()
     }
+    poll()
   }
 }
 poll()
