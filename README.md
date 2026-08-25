@@ -1,6 +1,6 @@
-# TradeDesk
+# TradeX
 
-TradeDesk is a service-oriented trading system for simulated spot trading. It accepts authenticated orders over HTTP, matches them in an in-memory engine, persists durable trading records to PostgreSQL through a worker, and publishes order-book depth updates over WebSocket.
+TradeX is a service-oriented trading system for simulated spot trading. It accepts authenticated orders over HTTP, matches them in an in-memory engine, persists durable trading records to PostgreSQL through a worker, and publishes order-book depth updates over WebSocket.
 
 ## Overview
 
@@ -32,7 +32,8 @@ flowchart LR
 | Backend API | Express HTTP API, Zod validation, bcrypt password hashing, JWT cookie authentication, request/response correlation | HTTP on `3001`; Redis Streams `backend_to_engine` and `engine_to_backend`; PostgreSQL `Users` table |
 | Engine | Single-process in-memory matching engine for limit and market orders, cancellations, balances, fills, and depth | Redis Streams |
 | DB Worker | Consumes engine persistence events and upserts balances, orders, and fills using Prisma | Redis Stream `engine_to_db`; PostgreSQL |
-| WebSocket Service | Consumes depth events and fans them out to subscribed sockets | WebSocket on `8080`; Redis Stream `engine_to_ws` |
+| WebSocket Server | Consumes depth events and fans them out to subscribed sockets | WebSocket on `8080`; Redis Stream `engine_to_ws` |
+| WebSocket Client | User-facing market-data client that subscribes to depth streams and displays updates of order book to connected users | WebSocket client; Backend API `/api/v1/order/depth/:asset` |
 | Snapshot Worker | Uploads the Redis RDB file to Amazon S3 on a six-hour interval | Local file `engine/redis-data/dump.rdb`; S3 |
 
 
@@ -59,6 +60,7 @@ flowchart LR
 - Redis-backed engine recovery snapshots.
 - Redis RDB backup upload to S3 via the snapshot worker.
 - WebSocket subscriptions for `depth.SOL`, `depth.BTC`, and `depth.ETH`.
+- Headless WebSocket client (`ws-client`) that can be used to connect, subscribe, and view live order-book depth.
 
 ### Redis Streams and state
 
@@ -83,7 +85,7 @@ The matching engine is the source of truth for live state. PostgreSQL is eventua
 ## Folder Structure
 
 ```text
-TradeDesk/
+TradeX/
 ├── backend/
 │   ├── prisma/                 # Users schema and migrations
 │   └── src/
@@ -104,6 +106,8 @@ TradeDesk/
 │   └── src/                    # Redis consumer and Prisma persistence
 ├── ws/
 │   └── src/                    # WebSocket server and stream consumer
+├── ws-client/
+│   └── src/                    # Headless WebSocket market-data client for users
 ├── snapshot worker/            # Periodic RDB-to-S3 uploader
 └── tests/                      # Validation, engine, and integration tests
 ```
