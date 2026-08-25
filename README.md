@@ -6,24 +6,9 @@ TradeX is a service-oriented trading system for simulated spot trading. It accep
 
 The application separates the latency-sensitive matching path from authentication, persistence, and market-data delivery. The API validates requests and waits for a correlated engine response. The engine owns balances, order books, orders, and fills in memory. Redis Streams provide the asynchronous transport between services, while Redis string keys provide engine restart snapshots. PostgreSQL is the durable store for users, balances, orders, and fills.
 
-## High-Level Architecture
+## System Architecture
 
-```mermaid
-flowchart LR
-    Client[HTTP client] --> API[Backend API :3001]
-    API -->|XADD backend_to_engine| Redis[(Redis)]
-    Redis -->|XREAD backend_to_engine| Engine[Matching Engine]
-    Engine -->|XADD engine_to_backend| Redis
-    Redis -->|XREADGROUP engine_to_backend| API
-    Engine -->|XADD engine_to_db| Redis
-    Redis -->|XREAD engine_to_db| DBW[DB Worker]
-    DBW --> PG[(PostgreSQL)]
-    Engine -->|XADD engine_to_ws| Redis
-    Redis -->|XREADGROUP engine_to_ws| WS[WebSocket :8080]
-    WS --> Browser[Market-data clients]
-    Engine <--> |engine:lastId, engine:orders, engine:orderbook, engine:balances, engine:fills| Redis
-    Snapshot[Snapshot Worker] -->|uploads dump.rdb every 6 hours| S3[(Amazon S3)]
-```
+![Alt text](Architecture/architecture.png) 
 
 ### Services and interaction
 
