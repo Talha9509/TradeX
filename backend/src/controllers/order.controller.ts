@@ -116,7 +116,7 @@ export const getBalance = async (req: Request, res: Response) => {
 
 
 export const getDepthofAsset = async (req: Request, res: Response) => {
-  const userId = req.userId!
+  // const userId = 10000
   try {
     type assetType = 'SOL' | 'BTC' | 'ETH'
     const asset: assetType = req.params.asset as assetType
@@ -124,7 +124,7 @@ export const getDepthofAsset = async (req: Request, res: Response) => {
     const payload = { asset: asset }
   
     const pendingResponse = untilWeGetBack(Identifier)
-    const ToEngine: EngineRequest = { payload, Identifier, userId, function: 'get_depth' }
+    const ToEngine: EngineRequest = { payload, Identifier, userId: null, function: 'get_depth' }
     const ToEngineStringified = JSON.stringify(ToEngine)
     const response = await client.xAdd(betoEngKey, '*', { ToEngineStringified })
     console.log(response)

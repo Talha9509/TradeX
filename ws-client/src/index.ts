@@ -84,13 +84,15 @@ setInterval(() => {
   // Lowest price first
   const asks = Object.entries(OrderBook.asks).sort((a, b) => Number(a[0]) - Number(b[0])); 
 
-  console.log("===== BIDS =====");
+  console.log("------ BIDS ------");
   bids.forEach(([price, qty]) => {
     console.log(`Price: ${price} | Qty: ${qty}`);
   });
 
-  console.log("\n===== ASKS =====");
+  console.log("\n------ ASKS ------");
   asks.forEach(([price, qty]) => {
     console.log(`Price: ${price} | Qty: ${qty}`);
   });
+  console.log("-----------------")
+  console.log('\n'.repeat(1));
 }, 2000);

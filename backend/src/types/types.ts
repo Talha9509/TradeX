@@ -31,7 +31,7 @@ export const Order = z.object({
 export type EngineRequest = {
   payload: Record<string | number, any>,
   Identifier: number, 
-  userId: number,
+  userId: number | null,
   function: EngineCommandType
 }
 
