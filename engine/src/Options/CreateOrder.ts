@@ -119,31 +119,38 @@ export const CreateOrder = (data: Record<string | number, any>, userId: number) 
       if (incomingOrder.type == 'market') {
         if (matchedQty == 0 || (incomingOrder.side == 'buy' && reqAmountt > usd?.available!)) {
           incomingOrder.status = incomingOrder.filledQty > 0 ? "Partially_filled" : 'Cancelled';
-          if(incomingOrder.side == 'buy' && incomingOrder.filledQty > 0){
-            const ask = asksBook.get(makerOrder.price)
-            updatedAsks[reqAmountt] = String(ask?.totalQty! - incomingOrder.filledQty)
-          }
-          else if(incomingOrder.side == 'sell' && incomingOrder.filledQty > 0){
-            const bid = bidsBook.get(makerOrder.price)
-            updatedBids[reqAmountt] = String(bid?.totalQty! - incomingOrder.filledQty)
-          }
+          // if(incomingOrder.side == 'buy' && incomingOrder.filledQty > 0){
+          //   const ask = asksBook.get(makerOrder.price)
+          //   console.log("ask- ")
+            // console.log(JSON.stringify(ask))
+            // updatedAsks[reqAmountt] = String(ask?.totalQty!)
+            // console.log("updated asks"+(ask?.totalQty!))
+          // }
+          // else if(incomingOrder.side == 'sell' && incomingOrder.filledQty > 0){
+          //   const bid = bidsBook.get(makerOrder.price)
+          //   updatedBids[reqAmountt] = String(bid?.totalQty! - incomingOrder.filledQty)
+          // }
           return { order: incomingOrder, fills: orderFill, message: incomingOrder.filledQty > 0 && 'Not enough balance, so order is partially filled', userId, incomingBalance, otherOrders, makerBalances: Object.keys(makerBalances).length > 0 ? makerBalances : null, createOrCancel: 'create', updatedAsks, updatedBids, asset: incomingOrder.market }
         }
       }
 
       incomingOrder.filledQty += matchedQty
       makerOrder.filledQty += matchedQty
-      console.log(`Step 4.6: incomingorder: ${JSON.stringify(incomingOrder)}, makerorder: ${JSON.stringify(makerOrder)}`)
+      console.log(`Step 4.6.1: incomingorder: ${JSON.stringify(incomingOrder)}`)
+      console.log(`Step 4.6.2: makerorder: ${JSON.stringify(makerOrder)}`)
       if(incomingOrder.filledQty === incomingOrder.quantity) incomingOrder.status = "Filled"
       if(makerOrder.filledQty === makerOrder.quantity) makerOrder.status = "Filled"
 
-      if(incomingOrder.side == 'buy'){
-        const ask = asksBook.get(makerOrder.price)
-        updatedAsks[levelPrice] = String(ask?.totalQty! - incomingOrder.filledQty)
-      } else {
-        const bid = bidsBook.get(makerOrder.price)
-        updatedBids[levelPrice] = String(bid?.totalQty! - incomingOrder.filledQty)
-      }
+      // if(incomingOrder.side == 'buy'){
+      //   const ask = asksBook.get(makerOrder.price)
+      //   console.log("ask- ")
+      //   console.log(JSON.stringify(ask))
+      //   updatedAsks[levelPrice] = String(ask?.totalQty! - incomingOrder.filledQty)
+      //   console.log("updated asks"+(ask?.totalQty! - incomingOrder.filledQty))
+      // } else {
+      //   const bid = bidsBook.get(makerOrder.price)
+      //   updatedBids[levelPrice] = String(bid?.totalQty! - incomingOrder.filledQty)
+      // }
 
       const now = new Date().toISOString()
       const Fill: Fill = { 
@@ -169,9 +176,9 @@ export const CreateOrder = (data: Record<string | number, any>, userId: number) 
       const sellerId = data.side == "buy" ? makerOrder.userId : incomingOrder.userId
       buyerBalance = getOrCreateBalance(buyerId)
       sellerBalance = getOrCreateBalance(sellerId)
-      console.log(`Step 4.8: buyerbalance, sellerbalance`)
-      console.log(buyerBalance)
-      console.log(sellerBalance)
+      // console.log(`Step 4.8: buyerbalance, sellerbalance`)
+      // console.log(buyerBalance)
+      // console.log(sellerBalance)
       const tradedUSD = levelPrice * matchedQty
       
       const buyerUSD = buyerBalance?.get("USD")!;
@@ -191,25 +198,41 @@ export const CreateOrder = (data: Record<string | number, any>, userId: number) 
           buyerAssetBalance.available = buyerAssetBalance.available + matchedQty
           buyerUSD.available = buyerUSD.available - reqAmountt
         }
-        console.log(`Step 4.9: after exchange, buyerbalance, sellerbalance`)
-        console.log(buyerBalance)
-        console.log(sellerBalance)
+        // console.log(`Step 4.9: after exchange, buyerbalance, sellerbalance`)
+        // console.log(buyerBalance)
+        // console.log(sellerBalance)
       } else { 
         // if user gets the asset in less prize
         if(tradedUSD < buyerUSD.locked){
           const diff = buyerUSD.locked - tradedUSD
           buyerUSD.available += diff
           buyerUSD.locked -= diff
-          console.log(`Step 4.8.1: buyer balance ${JSON.stringify(buyerBalance)}`)
+          console.log(`Step 4.8.1: buyer balance`)
+          console.log(buyerBalance)
         }
         buyerUSD.locked -= tradedUSD
         buyerAssetBalance.available += matchedQty
         sellerAssetBalance.locked -= matchedQty
         sellerUSD.available += tradedUSD
-        console.log(`Step 4.9: after exchange, buyerbalance ${JSON.stringify(buyerBalance)}, sellerbalance ${JSON.stringify(sellerBalance)}`)
+        console.log(`Step 4.9: after exchange,`)
+        console.log(`buyerbalance`)
+        console.log(buyerBalance)
+        console.log(`sellerbalance`)
+        console.log(sellerBalance)
       }
 
       level.totalQty -= matchedQty
+      console.log("after totalqty "+level.totalQty)
+      if (incomingOrder.side == 'buy') {
+        const ask = asksBook.get(makerOrder.price)
+        updatedAsks[levelPrice] = String(ask?.totalQty!)
+        console.log("updated asks" + (ask?.totalQty!))
+      } else {
+        const bid = bidsBook.get(makerOrder.price)
+        updatedBids[levelPrice] = String(bid?.totalQty!)
+        console.log("updated bids" + (bid?.totalQty!))
+      }
+
       console.log(`Step 4.10: level ${JSON.stringify(level)}`)
       if(makerOrder.filledQty == makerOrder.quantity) level.orders.shift()
       }
@@ -232,8 +255,8 @@ export const CreateOrder = (data: Record<string | number, any>, userId: number) 
     console.log(`Step 4.12: rest on orderbook`)
   }
 
-  console.log(`Step last: Balance `)
-  console.log(balance)
+  // console.log(`Step last: Balance `)
+  // console.log(balance)
   return { order: incomingOrder, otherOrders: otherOrders.length > 0 ? otherOrders : null, fills: orderFill.length > 0 ? orderFill : null, incomingBalance, makerBalances: Object.keys(makerBalances).length > 0 ? makerBalances : null, userId, createOrCancel: 'create', updatedAsks, updatedBids, asset: incomingOrder.market }
 
   // 4. 
