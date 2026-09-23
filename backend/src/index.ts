@@ -21,10 +21,8 @@ app.use("/auth/v1", authRoutes)
 app.use("/api/v1/order", orderRoutes)
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof Error) {
-    return res.status(500).json({ meessage: 'Internal Server Error' })
-  }
-  next(err);
+  console.log(err)
+  return res.status(500).json({ meessage: 'Internal Server Error' })
 });
 
 app.listen( PORT, () => {
